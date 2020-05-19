@@ -141,12 +141,12 @@ class Game(arcade.Window):
     def you_win(self):
         arcade.set_background_color(arcade.color.LAVENDER)
         arcade.draw_text(
-            "YOU ARE A WINNER CONGRATS!!!",
+            "YOU ARE A WIeNER CONGRATS!!!",
             WIDTH / 2,
             HEIGHT / 2,
             color=arcade.color.BLACK,
-            font_size=30,
-            anchor_x="center",
+            font_size=40, font_name = "kenney_pixel-webfont.ttf",
+            anchor_x="center"
         )
         arcade.draw_text(
             "Click to return to the instruction screen",
@@ -154,7 +154,7 @@ class Game(arcade.Window):
             HEIGHT / 2 - 100,
             color=arcade.color.BLACK,
             font_size=20,
-            anchor_x="center",
+            anchor_x="center", font_name = "kenney_pixel-webfont.ttf"
         )
 
 
@@ -175,8 +175,8 @@ class Game(arcade.Window):
                     WIDTH / 2,
                     3 * HEIGHT / 4 - i * 50,
                     color=arcade.color.BLACK,
-                    font_size=20,
-                    anchor_x="center",
+                    font_size=20,font_name = "kenney_pixel-webfont.ttf",
+                    anchor_x="center"
                 )
             arcade.draw_text(
                 "Or q to quit",
@@ -184,8 +184,19 @@ class Game(arcade.Window):
                 HEIGHT / 2 - 200,
                 arcade.color.BLACK,
                 15,
-                anchor_x="center",
+                anchor_x="center", font_name = "kenney_pixel-webfont.ttf"
             )
+            self.letter_a = arcade.Sprite("letter_A.png",.3)
+            self.letter_a.center_x, self.letter_a.center_y = 300,300
+            self.letter_b = arcade.Sprite("letter_B.png",.3)
+            self.letter_b.center_x, self.letter_b.center_y = 300,200
+            self.letter_c = arcade.Sprite("letter_C.png",.3)
+            self.letter_c.center_x, self.letter_c.center_y = 300,100
+            self.letter_a.draw()
+            self.letter_b.draw()
+            self.letter_c.draw()
+
+
 
         elif (
             self.current_state == LEVEL_ONE
