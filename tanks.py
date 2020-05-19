@@ -42,10 +42,20 @@ class Game(arcade.Window):
         self.player_bullet_list = arcade.SpriteList()
         self.enemy_list = arcade.SpriteList()
         self.enemy_bullet_list = arcade.SpriteList()
+        self.coin_list = arcade.SpriteList()
+        self.lives_list = arcade.SpriteList()
 
         # initialize score
         self.score = 0
         self.shot = 0
+        self.coins = 0 
+        self.lives = 3
+
+        for i in range(0,self.lives):
+            heart = arcade.Sprite("tileRed_48.png",.3)
+            heart.center_y = 750
+            heart.center_x = i *20 +20
+            self.lives_list.append(heart) 
 
         # set background color
 
@@ -92,7 +102,7 @@ class Game(arcade.Window):
             enemy.angle = self.angles_of_enemies[i]
             enemy.change_angle = 1
             self.enemy_list.append(enemy)
-
+    
     def level_two(self):
         arcade.set_background_color(arcade.color.BABY_BLUE)
         self.player = self.playerZ(20, WIDTH / 2)
@@ -106,7 +116,7 @@ class Game(arcade.Window):
             enemy.angle = random.randint(0, 360)
             enemy.change_angle = 1
             self.enemy_list.append(enemy)
-
+    
     def level_three(self):
         arcade.set_background_color(arcade.color.PASTEL_YELLOW)
         self.player = self.playerZ(WIDTH / 2, HEIGHT / 2)
@@ -146,6 +156,7 @@ class Game(arcade.Window):
             anchor_x="center",
         )
 
+
     def on_draw(self):
         arcade.start_render()
         if self.current_state == INSTRUCTIONS:
@@ -155,7 +166,7 @@ class Game(arcade.Window):
                 "Shoot using the space bar",
                 "Kill all enemies to pass",
                 " To practice level 1: push A, 2: B, 3: C",
-                "otherwise push d",
+                "otherwise push d"
             ]
             for i in range(0, len(instructions)):
                 arcade.draw_text(
@@ -186,6 +197,16 @@ class Game(arcade.Window):
             self.enemy_list.draw()
             self.player_bullet_list.draw()
             self.enemy_bullet_list.draw()
+            self.lives_list = arcade.SpriteList()
+
+            for i in range(0,self.lives):
+                heart = arcade.Sprite("tileRed_48.png",.3)
+                heart.center_y = 750
+                heart.center_x = i *20 +20
+                self.lives_list.append(heart) 
+
+            self.lives_list.draw()
+            self.coin_list.draw()
             output = f"Score: {self.score}"
             arcade.draw_text(
                 output,
@@ -262,7 +283,12 @@ class Game(arcade.Window):
 
             for bullet in self.enemy_bullet_list:
                 if bullet.collides_with_sprite(self.player):
-                    self.current_state = GAME_OVER
+                    bullet.remove_from_sprite_lists()
+                    self.lives -= 1
+                    if self.lives == 0:
+                        self.current_state = GAME_OVER
+                    else: 
+                        self.lives_list.remove(self.lives_list[-1])
 
             for i in self.enemy_list:
                 i.update()
@@ -275,9 +301,13 @@ class Game(arcade.Window):
                     bullet.change_x = 2 * MOVEMENT_SPEED * np.cos(np.radians(bullet.angle))
                     bullet.change_y = 2 * MOVEMENT_SPEED * np.sin(np.radians(bullet.angle))
                     self.enemy_bullet_list.append(bullet)
-                if i.collides_with_sprite(self.player):
+                if i.collides_with_sprite(self.player) and self.lives == 0:
                     self.current_state = GAME_OVER
+                elif i.collides_with_sprite(self.player) and self.lives > 0: 
+                    self.lives -= 1
+                    self.lives_list.remove(self.lives_list[-1])
 
+            self.lives_list.update()
             self.enemy_bullet_list.update()
 
         if self.current_state == LEVEL_ONE:
@@ -497,6 +527,7 @@ class Player(arcade.Sprite):
 
 
 class Bullets(arcade.Sprite):
+    
     def update(self):
         super().update()
         # remove bullet if off screen
