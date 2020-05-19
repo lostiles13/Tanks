@@ -14,9 +14,7 @@ LEVEL_THREE = 4
 GAME_OVER = 5
 YOU_WIN = 6
 
-# game class does tank chooser and then runs the game
-# second screen, game runner, that is what has a good tank and bad tanks, run the game
-
+INSTRUCTION_FONT = "kenney_pixel-webfont.ttf"
 
 class Game(arcade.Window):
     def __init__(self, width, height, title):
@@ -27,14 +25,15 @@ class Game(arcade.Window):
         self.current_state = INSTRUCTIONS
         arcade.set_background_color(color=arcade.color.PINK_LACE)
 
+        # load the different textures
         self.t_explosion = arcade.load_texture("explosion3.png")
         self.t_tread = arcade.load_texture("tracksSmall.png")
         self.t_shot = arcade.load_texture("shotThin.png")
         self.t_hit = arcade.load_texture("tank_red.png")
         self.emitters = []
+
         arcade.run()
 
-    # define a setup so we can restart game without going back to the instruction screen
     def setup(self):
         """
         Call to reset player_bullet_list, enemy_list, enemy_bullet_list, score, and shots
@@ -55,10 +54,9 @@ class Game(arcade.Window):
         for i in range(0,self.lives):
             heart = arcade.Sprite("tileRed_48.png",.3)
             heart.center_y = 750
-            heart.center_x = i *20 +20
+            heart.center_x = i *20 + 30
             self.lives_list.append(heart) 
 
-        # set background color
 
     def graph(self):
         """
@@ -141,7 +139,7 @@ class Game(arcade.Window):
     def you_win(self):
         arcade.set_background_color(arcade.color.LAVENDER)
         arcade.draw_text(
-            "YOU ARE A WIeNER CONGRATS!!!",
+            "YOU ARE A WINNER CONGRATS!!!",
             WIDTH / 2,
             HEIGHT / 2,
             color=arcade.color.BLACK,
@@ -157,46 +155,33 @@ class Game(arcade.Window):
             anchor_x="center", font_name = "kenney_pixel-webfont.ttf"
         )
 
+    def instructions_screen(self):
+        title = "Learn how to play"
+        arcade.draw_text(title, WIDTH//2, HEIGHT - 60, color = arcade.color.BLACK, font_size=50, 
+        font_name= INSTRUCTION_FONT, anchor_x='center')
+        #self.player = arcade.Sprite("tank_blue.png")
+        #self.player.draw()
+        instructions = [
+                "Move your player using the arrow keys",
+                "Shoot using the space bar",
+                "Kill all enemies to pass", 
+                "Q to quit"
+            ]
+        for i in range(0, len(instructions)):
+            arcade.draw_text(
+                instructions[i],
+                    20,
+                    3 * HEIGHT / 4 - i * 50,
+                    color=arcade.color.BLACK,
+                    font_size=30,font_name = "kenney_pixel-webfont.ttf"
+                    
+                )
+        
 
     def on_draw(self):
         arcade.start_render()
         if self.current_state == INSTRUCTIONS:
-            instructions = [
-                "Move your character using the arrow keys",
-                "Avoid getting shot",
-                "Shoot using the space bar",
-                "Kill all enemies to pass",
-                " To practice level 1: push A, 2: B, 3: C",
-                "otherwise push d"
-            ]
-            for i in range(0, len(instructions)):
-                arcade.draw_text(
-                    instructions[i],
-                    WIDTH / 2,
-                    3 * HEIGHT / 4 - i * 50,
-                    color=arcade.color.BLACK,
-                    font_size=20,font_name = "kenney_pixel-webfont.ttf",
-                    anchor_x="center"
-                )
-            arcade.draw_text(
-                "Or q to quit",
-                WIDTH / 2,
-                HEIGHT / 2 - 200,
-                arcade.color.BLACK,
-                15,
-                anchor_x="center", font_name = "kenney_pixel-webfont.ttf"
-            )
-            self.letter_a = arcade.Sprite("letter_A.png",.3)
-            self.letter_a.center_x, self.letter_a.center_y = 300,300
-            self.letter_b = arcade.Sprite("letter_B.png",.3)
-            self.letter_b.center_x, self.letter_b.center_y = 300,200
-            self.letter_c = arcade.Sprite("letter_C.png",.3)
-            self.letter_c.center_x, self.letter_c.center_y = 300,100
-            self.letter_a.draw()
-            self.letter_b.draw()
-            self.letter_c.draw()
-
-
+            self.instructions_screen()
 
         elif (
             self.current_state == LEVEL_ONE
@@ -322,7 +307,7 @@ class Game(arcade.Window):
 
             self.lives_list.update()
             self.enemy_bullet_list.update()
-
+        
         if self.current_state == LEVEL_ONE:
 
             if len(self.enemy_list) == 0:
@@ -374,7 +359,7 @@ class Game(arcade.Window):
             if key == arcade.key.Q:
                 # close the window if 'Q' is pressed
                 arcade.close_window()
-        elif self.current_state == GAME_OVER:
+        if self.current_state == GAME_OVER:
             if key == arcade.key.A:
                 self.setup()
                 self.level_one()
@@ -387,8 +372,7 @@ class Game(arcade.Window):
                 self.setup()
                 self.level_three()
                 self.current_state = LEVEL_THREE
-        else:
-            # if self.current_state == LEVEL_ONE or self.current_state == LEVEL_TWO or self.current_state == LEVEL_THREE:
+        if self.current_state == LEVEL_ONE or self.current_state == LEVEL_TWO or self.current_state == LEVEL_THREE or self.current_state ==  INSTRUCTIONS:
             if key == arcade.key.UP:
                 self.player.change_y = MOVEMENT_SPEED
                 self.player.angle = -180
@@ -407,7 +391,7 @@ class Game(arcade.Window):
                 self.emitters.append(self.draw_treads())
 
             if key == arcade.key.SPACE:
-                self.shot += 1
+                
                 bullet = Bullets("specialBarrel6.png")
                 self.emitters.append(self.make_gun_fire_emitter())
                 bullet.center_x, bullet.center_y = (
@@ -425,6 +409,11 @@ class Game(arcade.Window):
                 elif self.player.angle == -180:
                     bullet.change_y = MOVEMENT_SPEED * 2
                 self.player_bullet_list.append(bullet)
+
+                if (self.current_state == LEVEL_ONE or
+                self.current_state == LEVEL_TWO or 
+                self.current_state == LEVEL_THREE):  
+                    self.shot += 1
 
         if key == arcade.key.Q:
             # close the window if 'Q' is pressed
