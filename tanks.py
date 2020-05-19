@@ -30,6 +30,7 @@ class Game(arcade.Window):
         self.t_explosion = arcade.load_texture("explosion3.png")
         self.t_tread = arcade.load_texture("tracksSmall.png")
         self.t_shot = arcade.load_texture("shotThin.png")
+        self.t_hit = arcade.load_texture("tank_red.png")
         self.emitters = []
         arcade.run()
 
@@ -288,6 +289,7 @@ class Game(arcade.Window):
                     if self.lives == 0:
                         self.current_state = GAME_OVER
                     else: 
+                        self.emitters.append(self.player_gets_hit())
                         self.lives_list.remove(self.lives_list[-1])
 
             for i in self.enemy_list:
@@ -507,6 +509,26 @@ class Game(arcade.Window):
             emit_controller=arcade.EmitBurst(1),
             particle_factory=lambda emitter: arcade.FadeParticle(
                 filename_or_texture=self.t_shot,
+                angle=self.player.angle,
+                change_xy=(0, 0),
+                lifetime=0.4,
+                scale=1,
+            ),
+        )
+    def player_gets_hit(self):
+        """
+        Function to turn the player red when it gets hit 
+        Inputs: 
+            None
+        Outputs:
+            
+
+        """
+        return arcade.Emitter(
+            center_xy=(self.player.center_x, self.player.center_y),
+            emit_controller=arcade.EmitBurst(1),
+            particle_factory=lambda emitter: arcade.FadeParticle(
+                filename_or_texture=self.t_hit,
                 angle=self.player.angle,
                 change_xy=(0, 0),
                 lifetime=0.4,
