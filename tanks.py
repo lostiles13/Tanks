@@ -3,6 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import random
 
+import Enemies
+
 MOVEMENT_SPEED = 5
 WIDTH = 800
 HEIGHT = 800
@@ -26,10 +28,10 @@ class Game(arcade.Window):
         arcade.set_background_color(color=arcade.color.PINK_LACE)
 
         # load the different textures
-        self.t_explosion = arcade.load_texture("explosion3.png")
-        self.t_tread = arcade.load_texture("tracksSmall.png")
-        self.t_shot = arcade.load_texture("shotThin.png")
-        self.t_hit = arcade.load_texture("tank_red.png")
+        self.t_explosion = arcade.load_texture("Sprites/explosion3.png")
+        self.t_tread = arcade.load_texture("Sprites/tracksSmall.png")
+        self.t_shot = arcade.load_texture("Sprites/shotThin.png")
+        self.t_hit = arcade.load_texture("Sprites/tank_red.png")
         self.emitters = []
 
         arcade.run()
@@ -52,7 +54,7 @@ class Game(arcade.Window):
         self.lives = 3
 
         for i in range(0,self.lives):
-            heart = arcade.Sprite("tileRed_48.png",.3)
+            heart = arcade.Sprite("Sprites/tileRed_48.png",.3)
             heart.center_y = 750
             heart.center_x = i *20 + 30
             self.lives_list.append(heart) 
@@ -76,7 +78,7 @@ class Game(arcade.Window):
         Returns: 
             a Player object called self.player in the coordinates provided
         """
-        self.player = Player("tank_blue.png")
+        self.player = Player("Sprites/tank_blue.png")
         self.player.center_x, self.player.center_y = x, y
         return self.player
 
@@ -93,7 +95,7 @@ class Game(arcade.Window):
         ]
 
         for i in range(0, len(self.positions_of_enemies)):
-            enemy = RedEnemy(1)  # call the class
+            enemy = Enemies.RedEnemy(1)  # call the class
             enemy.center_x, enemy.center_y = (
                 self.positions_of_enemies[i][0],
                 self.positions_of_enemies[i][1],
@@ -110,7 +112,7 @@ class Game(arcade.Window):
         # FOR LOOP TO PLACE THE TANKS IN RANDOM PLACES
         for i in range(1, 8):
             y_pos = random.randint(40, 760)
-            enemy = SandEnemy(2)
+            enemy = Enemies.SandEnemy(2)
             enemy.center_x, enemy.center_y = i * 100, y_pos
             enemy.angle = random.randint(0, 360)
             # enemy.change_angle = 1
@@ -127,7 +129,7 @@ class Game(arcade.Window):
             (3 * WIDTH / 4, 3 * HEIGHT / 4),
         ]
         for i in self.positions_of_enemies3:
-            enemy = WobblerEnemy(2, 3)
+            enemy = Enemies.WobblerEnemy(2, 3)
             enemy.center_x, enemy.center_y = i[0], i[1]
             enemy.angle = random.randint(0, 360)
             self.enemy_list.append(enemy)
@@ -200,7 +202,7 @@ class Game(arcade.Window):
             self.lives_list = arcade.SpriteList()
 
             for i in range(0,self.lives):
-                heart = arcade.Sprite("tileRed_48.png",.3)
+                heart = arcade.Sprite("Sprites/tileRed_48.png",.3)
                 heart.center_y = 750
                 heart.center_x = i *20 +20
                 self.lives_list.append(heart) 
@@ -388,7 +390,7 @@ class Game(arcade.Window):
 
             if key == arcade.key.SPACE:
                 
-                bullet = Bullets("specialBarrel6.png")
+                bullet = Bullets("Sprites/specialBarrel6.png")
                 self.emitters.append(self.make_gun_fire_emitter())
                 bullet.center_x, bullet.center_y = (
                     self.player.center_x,
@@ -556,177 +558,6 @@ class Bullets(arcade.Sprite):
             or self.center_y > HEIGHT
         ):
             self.remove_from_sprite_lists()
-
-
-class Enemy(arcade.Sprite):
-    def __init__(self, texture):
-        super().__init__(texture)
-        # Correcting for tanks facing downwards
-        self.texture_transform = arcade.Matrix3x3().rotate(90)
-        # Fixing distortion caused by texture rotation
-        # Or get rid of for fat little tanks which are also cute
-        self.width, self.height = self.height, self.width
-        # Set initial values
-        self.speed = 0
-        self.change_angle = 0
-        self.cur_direction = np.array([np.cos(self.radians), np.sin(self.radians)])
-
-    def draw_direction(self, length: float = 40, color=arcade.color.RED):
-        """
-        Helper function to draw a currently facing line if needed
-        to help troubleshoot movement.
-
-        Inputs:
-            length (float): length of line
-            color (3-tuple): arcade color or tuple for line color
-        """
-        arcade.draw_line(
-            self.center_x,
-            self.center_y,
-            self.center_x + length * self.cur_direction[0],
-            self.center_y + length * self.cur_direction[1],
-            color,
-            2,
-        )
-
-    def forward(self, speed: float = 1.0):
-        """
-        The built-in forward method seems to do INSANE things by
-        _incrementing_ the current speed by the angle and speed, which 
-        seems entirely counter-intuitive. This here seems much more 
-        intuitive. Sets the velocity according to the desired speed and
-        current facing direction.
-
-        Inputs:
-            speed (float): desired pixel speed
-        """
-        self.change_x = np.cos(self.radians) * speed
-        self.change_y = np.sin(self.radians) * speed
-
-    def update(self):
-        super().update()
-
-        # Bounce top and bottom
-        if self.center_y > HEIGHT or self.center_y < 0:
-            # Reset to wall edge
-            if abs(self.center_y - HEIGHT) < abs(self.center_y - 0):
-                self.center_y = HEIGHT
-            else:
-                self.center_y = 0
-            # mirror angle
-            self.change_y *= -1
-            # Update sprite facing direction
-            self.radians = np.arctan2(self.change_y, self.change_x)
-
-        # Bounce left and right
-        if self.center_x > WIDTH or self.center_x < 0:
-            # Reset to wall edge
-            if abs(self.center_x - WIDTH) < abs(self.center_x - 0):
-                self.center_x = WIDTH
-            else:
-                self.center_x = 0
-            # Mirror angle
-            self.change_x *= -1
-            # Update facingc direction
-            self.radians = np.arctan2(self.change_y, self.change_x)
-
-        # Reset velocity to new forward direction
-        self.forward(self.speed)
-        # Update current direction
-        self.cur_direction = np.array([np.cos(self.radians), np.sin(self.radians)])
-
-        # The old 90 degree rotate code in case of future reference
-        # make the enemies move
-        # # bottom left corner
-        # if self.center_x < WIDTH / 2 and self.center_y < HEIGHT / 2:
-        #     if self.angle > 180 or self.angle < 90:
-        #         self.change_angle *= -1
-        # # bottom right corner
-        # elif self.center_x > WIDTH / 2 and self.center_y < HEIGHT / 2:
-        #     if self.angle < 180 or self.angle > 270:
-        #         self.change_angle *= -1
-        # # top right corner
-        # elif self.center_x > WIDTH / 2 and self.center_y > HEIGHT / 2:
-        #     if self.angle < 270 or self.angle > 360:
-        #         self.change_angle *= -1
-        # # top left corner
-        # elif self.center_x < WIDTH / 2 and self.center_y > HEIGHT / 2:
-        #     if self.angle < 0 or self.angle > 90:
-        #         self.change_angle *= -1
-
-    def will_fire(self):
-        """
-        Determines whether an enemy will fire during a frame. 
-        Higher values make it much more likely.
-
-        Returns:
-            boolean: if a projectile will be fired
-        """
-        chance = 2
-        return random.randint(0, 100) <= chance
-
-    def fire(self):
-        """
-        Creates and returns a Bullet object fired by this enemy.
-
-        Returns:
-            Bullet: one bullet object originating from the enemy and moving
-                    in the proper direction.
-        """
-        bullet = Bullets("barrelRed_top.png", 0.5)
-        bullet.angle = self.angle
-        bullet.position = (self.center_x, self.center_y)
-        direction = np.array([np.cos(bullet.radians), np.sin(bullet.radians)])
-        bullet.velocity = 2 * MOVEMENT_SPEED * direction
-
-        return bullet
-
-
-class RedEnemy(Enemy):
-    """
-    Enemy which just spins in circles and fires.
-    """
-
-    def __init__(self, angle_rate: float):
-        super().__init__("tank_red.png")
-        self.change_angle = angle_rate
-
-
-class GreenEnemy(Enemy):
-    """
-    Enemy which spins and occasionally flips rotation direction.
-    """
-
-    def __init__(self, angle_rate: float):
-        super().__init__("tank_green.png")
-        self.change_angle = angle_rate
-
-    def update(self):
-        super().update()
-        if random.random() < 0.01:
-            self.change_angle *= -1
-
-
-class SandEnemy(Enemy):
-    """
-    Enemy which moves straight, bouncing off walls.
-    """
-
-    def __init__(self, speed: float):
-        super().__init__("tank_sand.png")
-        self.speed = 2
-
-
-class WobblerEnemy(GreenEnemy):
-    """
-    Combination of Green and Sand, which moves and
-    occassionally flips rotating direction.
-    """
-
-    def __init__(self, angle_rate: float, speed: float):
-        Enemy.__init__(self, "tank_bigRed.png")
-        self.change_angle = angle_rate
-        self.speed = speed
 
 
 def main():
