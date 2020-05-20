@@ -132,6 +132,9 @@ class RedEnemy(Enemy):
     def __init__(self, angle_rate: float):
         super().__init__("Sprites/tank_red.png")
         self.change_angle = angle_rate
+        # Give chance to rotate opposite direction
+        if random.randint(0,1):
+            self.change_angle *= -1
 
 
 class GreenEnemy(Enemy):
