@@ -72,17 +72,6 @@ class Game(arcade.Window):
         ax1.set_title(f"Your final score was {self.score}")
         plt.show()
 
-    # def playerZ(self, x, y):
-    # """
-    # Inputs:
-    # x, y: integers describing where you want the player to start
-    # Returns:
-    # a Player object called self.player in the coordinates provided
-    # """
-    # self.player = Player("Sprites/tank_blue.png")
-    # self.player.center_x, self.player.center_y = x, y
-    # return self.player:q!
-
     def level_one(self):
 
         arcade.set_background_color(color=arcade.color.GREEN)
@@ -389,13 +378,14 @@ class Game(arcade.Window):
             or self.current_state == LEVEL_THREE
             or self.current_state == INSTRUCTIONS
         ):
-            if key == arcade.key.UP:
-                self.player.add_key(key)
-            if key == arcade.key.DOWN:
-                self.player.add_key(key)
-            if key == arcade.key.RIGHT:
-                self.player.add_key(key)
-            if key == arcade.key.LEFT:
+            if key == arcade.key.LSHIFT or modifiers % 2:
+                self.player.set_precise_mode(True)
+            if key in [
+                arcade.key.UP,
+                arcade.key.DOWN,
+                arcade.key.RIGHT,
+                arcade.key.LEFT,
+            ]:
                 self.player.add_key(key)
 
             if key == arcade.key.SPACE:
@@ -429,6 +419,8 @@ class Game(arcade.Window):
             or self.current_state == LEVEL_TWO
             or self.current_state == LEVEL_THREE
         ):
+            if arcade.key.LSHIFT:
+                self.player.set_precise_mode(False)
             if key in [
                 arcade.key.UP,
                 arcade.key.DOWN,
@@ -544,14 +536,32 @@ class Player(arcade.Sprite):
         self.turn_rate = 5
         self.distance_traveled = 0
         self.friction = 0.8
+        self.precise_mode = False
+
+    def set_precise_mode(self, value: bool):
+        """ 
+        Sets a special turning mode that decreases the turning radius
+        by half. This helps when trying to line up tricky shots, without
+        killing the tank manuverability.
+
+        Inputs:
+            value (boolean): where to turn precise mode on (true) or off (false)
+        """
+        self.precise_mode = value
 
     def turn_left(self):
         """ Turn tank to the left """
-        self.change_angle = self.turn_rate
+        if self.precise_mode:
+            self.change_angle = self.turn_rate / 2
+        else:
+            self.change_angle = self.turn_rate
 
     def turn_right(self):
         """ Turn tank to the right """
-        self.change_angle = -self.turn_rate
+        if self.precise_mode:
+            self.change_angle = -self.turn_rate / 2
+        else:
+            self.change_angle = -self.turn_rate
 
     def forward(self, speed: float):
         """ 
