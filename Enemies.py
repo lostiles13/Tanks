@@ -2,9 +2,7 @@ import arcade
 import numpy as np
 import random
 
-# I think I'm ok to do this without getting any circular dependencies
-from tanks import WIDTH, HEIGHT, MOVEMENT_SPEED
-from tanks import Bullets
+import tanks
 
 
 class Enemy(arcade.Sprite):
@@ -64,10 +62,10 @@ class Enemy(arcade.Sprite):
             super().update()
 
             # Bounce top and bottom
-            if self.center_y > HEIGHT or self.center_y < 0:
+            if self.center_y > tanks.HEIGHT or self.center_y < 0:
                 # Reset to wall edge
-                if abs(self.center_y - HEIGHT) < abs(self.center_y - 0):
-                    self.center_y = HEIGHT
+                if abs(self.center_y - tanks.HEIGHT) < abs(self.center_y - 0):
+                    self.center_y = tanks.HEIGHT
                 else:
                     self.center_y = 0
                 # mirror angle
@@ -76,10 +74,10 @@ class Enemy(arcade.Sprite):
                 self.radians = np.arctan2(self.change_y, self.change_x)
 
             # Bounce left and right
-            if self.center_x > WIDTH or self.center_x < 0:
+            if self.center_x > tanks.WIDTH or self.center_x < 0:
                 # Reset to wall edge
-                if abs(self.center_x - WIDTH) < abs(self.center_x - 0):
-                    self.center_x = WIDTH
+                if abs(self.center_x - tanks.WIDTH) < abs(self.center_x - 0):
+                    self.center_x = tanks.WIDTH
                 else:
                     self.center_x = 0
                 # Mirror angle
@@ -91,7 +89,6 @@ class Enemy(arcade.Sprite):
             self.forward(self.speed)
             # Update current direction
             self.cur_direction = np.array([np.cos(self.radians), np.sin(self.radians)])
-
 
     def will_fire(self):
         """
@@ -115,11 +112,11 @@ class Enemy(arcade.Sprite):
             Bullet: one bullet object originating from the enemy and moving
                     in the proper direction.
         """
-        bullet = Bullets("Sprites/barrelRed_top.png", 0.5)
+        bullet = tanks.Bullets("Sprites/barrelRed_top.png", 0.5)
         bullet.angle = self.angle
         bullet.position = (self.center_x, self.center_y)
         direction = np.array([np.cos(bullet.radians), np.sin(bullet.radians)])
-        bullet.velocity = 2 * MOVEMENT_SPEED * direction
+        bullet.velocity = 2 * tanks.MOVEMENT_SPEED * direction
 
         return bullet
 
@@ -133,7 +130,7 @@ class RedEnemy(Enemy):
         super().__init__("Sprites/tank_red.png")
         self.change_angle = angle_rate
         # Give chance to rotate opposite direction
-        if random.randint(0,1):
+        if random.randint(0, 1):
             self.change_angle *= -1
 
 
