@@ -51,6 +51,7 @@ class Game(arcade.Window):
         self.lives_list = arcade.SpriteList()
         self.oil_list = arcade.SpriteList()
         self.obstacle_list = arcade.SpriteList()
+        self.emitters = []
 
         # initialize score
         self.score = 0
@@ -79,7 +80,12 @@ class Game(arcade.Window):
 
         arcade.set_background_color(color=arcade.color.GREEN)
         self.player = Player.Player(WIDTH / 2, HEIGHT / 2)
-        self.positions_of_enemies = [(100, 100), (100, 700), (700, 100), (700, 700)]
+        self.positions_of_enemies = [
+            (100, 100),
+            (100, HEIGHT - 100),
+            (WIDTH - 100, 100),
+            (WIDTH - 100, HEIGHT - 100),
+        ]
         self.angles_of_enemies = [
             random.randint(90, 180),
             random.randint(0, 90),
@@ -112,6 +118,8 @@ class Game(arcade.Window):
             enemy.angle = random.randint(0, 360)
             # enemy.change_angle = 1
             self.enemy_list.append(enemy)
+        self.oil_list.append(OilSpill())
+        self.obstacle_list.extend([Obstacle() for _ in range(3)])
 
     def level_three(self):
         arcade.set_background_color(arcade.color.PASTEL_YELLOW)
@@ -128,10 +136,8 @@ class Game(arcade.Window):
             enemy.center_x, enemy.center_y = i[0], i[1]
             enemy.angle = random.randint(0, 360)
             self.enemy_list.append(enemy)
-        # movements = [-3, -1, 0, 1, 3]
-        # for i in self.enemy_list:
-        #     i.change_x = movements[random.randint(0, 4)]
-        #     i.change_y = movements[random.randint(0, 4)]
+        self.oil_list.append(OilSpill())
+        self.obstacle_list.extend([Obstacle() for _ in range(3)])
 
     def you_win(self):
         arcade.set_background_color(arcade.color.LAVENDER)
@@ -195,9 +201,9 @@ class Game(arcade.Window):
         ):
             self.oil_list.draw()
             self.obstacle_list.draw()
+            self.player.draw()
             for e in self.emitters:
                 e.draw()
-            self.player.draw()
             self.enemy_list.draw()
             ## Only here to help visualize facing
             # for e in self.enemy_list:
@@ -287,9 +293,13 @@ class Game(arcade.Window):
                 for bullet in self.player_bullet_list:
                     if bullet.collides_with_sprite(enemy):
                         bullet.remove_from_sprite_lists()
-                        enemy.remove_from_sprite_lists()
-                        self.emitters.append(
-                            self.make_explosion(bullet.center_x, bullet.center_y)
+                        new_obstacle = enemy.destroy()
+                        self.obstacle_list.append(new_obstacle)
+                        self.emitters.extend(
+                            [
+                                self.make_explosion(bullet.center_x, bullet.center_y),
+                                new_obstacle.generate_smoke(),
+                            ]
                         )
                         self.score += 1
                     bullet.check_obstacle_collisions(self.obstacle_list)
@@ -328,7 +338,7 @@ class Game(arcade.Window):
             for bullet in self.player_bullet_list:
                 bullet.cleanup()
             for obstacle in self.obstacle_list:
-                obstacle.cleanup()
+                obstacle.cleanup(self.emitters)
 
         if self.current_state == LEVEL_ONE:
 
@@ -589,6 +599,7 @@ class Obstacle(arcade.Sprite):
         self.center_y = random.randint(0, HEIGHT)
         self.health = 10
         self.should_die = False
+        self.emitter = None
 
     def check_collisions(self, player, health_list, instant_list):
         """
@@ -613,9 +624,12 @@ class Obstacle(arcade.Sprite):
         if self.health <= 0:
             self.should_die = True
 
-    def cleanup(self):
+    def cleanup(self, emitter_list):
         if self.should_die:
             self.kill()
+            if self.emitter:
+                if self.emitter in emitter_list:
+                    emitter_list.remove(self.emitter)
             return True
         return False
 

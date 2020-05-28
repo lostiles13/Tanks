@@ -8,9 +8,7 @@ import tanks
 class Player(arcade.Sprite):
     def __init__(self, x, y):
         super().__init__("Sprites/tank_blue.png")
-        self.fire_noise = arcade.Sound("Sounds/footstep_snow_002.ogg")
-        self.texture_transform = arcade.Matrix3x3().rotate(90)
-        self.width, self.height = self.height, self.width
+        self.fire_noise = arcade.Sound("Sounds/tank_fire.mp3")
         self.center_x = x
         self.center_y = y
         self.cur_keys_pressed = []
@@ -95,7 +93,7 @@ class Player(arcade.Sprite):
         bullet.radians = self.radians
         bullet.change_x = 2 * tanks.MOVEMENT_SPEED * np.cos(self.radians)
         bullet.change_y = 2 * tanks.MOVEMENT_SPEED * np.sin(self.radians)
-        self.fire_noise.play()
+        self.fire_noise.play(0.25)
 
         return bullet
 

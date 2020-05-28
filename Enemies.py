@@ -8,11 +8,6 @@ import tanks
 class Enemy(arcade.Sprite):
     def __init__(self, texture):
         super().__init__(texture)
-        # Correcting for tanks facing downwards
-        self.texture_transform = arcade.Matrix3x3().rotate(90)
-        # Fixing distortion caused by texture rotation
-        # Or get rid of for fat little tanks which are also cute
-        self.width, self.height = self.height, self.width
         # Set initial values
         self.speed = 0
         self.change_angle = 0
@@ -20,6 +15,8 @@ class Enemy(arcade.Sprite):
 
         self.spawning = True
         self.alpha = 0
+
+        self.sound_death = arcade.Sound("Sounds/explosion.mp3")
 
     def draw_direction(self, length: float = 40, color=arcade.color.RED):
         """
@@ -120,6 +117,13 @@ class Enemy(arcade.Sprite):
 
         return bullet
 
+    def destroy(self):
+        self.sound_death.play(0.5)
+        self.kill()
+        return DeadEnemy(
+            "Sprites/tank_dead1.png", self.center_x, self.center_y, self.angle
+        )
+
 
 class RedEnemy(Enemy):
     """
@@ -169,3 +173,40 @@ class WobblerEnemy(GreenEnemy):
         Enemy.__init__(self, "Sprites/tank_bigRed.png")
         self.change_angle = angle_rate
         self.speed = speed
+
+    def destroy(self):
+        self.sound_death.play(0.5)
+        self.kill()
+        return DeadEnemy(
+            "Sprites/tank_dead2.png", self.center_x, self.center_y, self.angle
+        )
+
+
+class DeadEnemy(tanks.Obstacle):
+    def __init__(self, texture, x, y, r):
+        super().__init__()
+        self.texture = arcade.load_texture(texture)
+        self.center_x = x
+        self.center_y = y
+        self.angle = r
+        self.health = 50
+        self.should_die = False
+        self.texture_smoke = arcade.make_soft_circle_texture(40, arcade.color.GRAY)
+        self.emitter = None
+
+    def generate_smoke(self):
+        """
+        Particle generator to create smoking wreck
+        """
+        offset = random.randint(-10, 10)
+        smoke = arcade.Emitter(
+            center_xy=(self.center_x + offset, self.center_y + offset),
+            emit_controller=arcade.EmitMaintainCount(50),
+            particle_factory=lambda emitter: arcade.FadeParticle(
+                filename_or_texture=self.texture_smoke,
+                change_xy=arcade.rand_vec_spread_deg(90, 20, 2),
+                lifetime=random.random() * 2,
+            ),
+        )
+        self.emitter = smoke
+        return smoke
