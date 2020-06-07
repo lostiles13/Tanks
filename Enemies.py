@@ -2,19 +2,12 @@ import arcade
 import numpy as np
 import random
 
-# I think I'm ok to do this without getting any circular dependencies
-from tanks import WIDTH, HEIGHT, MOVEMENT_SPEED
-from tanks import Bullets
+import tanks
 
 
 class Enemy(arcade.Sprite):
     def __init__(self, texture):
         super().__init__(texture)
-        # Correcting for tanks facing downwards
-        self.texture_transform = arcade.Matrix3x3().rotate(90)
-        # Fixing distortion caused by texture rotation
-        # Or get rid of for fat little tanks which are also cute
-        self.width, self.height = self.height, self.width
         # Set initial values
         self.speed = 0
         self.change_angle = 0
@@ -22,6 +15,8 @@ class Enemy(arcade.Sprite):
 
         self.spawning = True
         self.alpha = 0
+
+        self.sound_death = arcade.Sound("Sounds/explosion.mp3")
 
     def draw_direction(self, length: float = 40, color=arcade.color.RED):
         """
@@ -64,10 +59,10 @@ class Enemy(arcade.Sprite):
             super().update()
 
             # Bounce top and bottom
-            if self.center_y > HEIGHT or self.center_y < 0:
+            if self.center_y > tanks.HEIGHT or self.center_y < 0:
                 # Reset to wall edge
-                if abs(self.center_y - HEIGHT) < abs(self.center_y - 0):
-                    self.center_y = HEIGHT
+                if abs(self.center_y - tanks.HEIGHT) < abs(self.center_y - 0):
+                    self.center_y = tanks.HEIGHT
                 else:
                     self.center_y = 0
                 # mirror angle
@@ -76,10 +71,10 @@ class Enemy(arcade.Sprite):
                 self.radians = np.arctan2(self.change_y, self.change_x)
 
             # Bounce left and right
-            if self.center_x > WIDTH or self.center_x < 0:
+            if self.center_x > tanks.WIDTH or self.center_x < 0:
                 # Reset to wall edge
-                if abs(self.center_x - WIDTH) < abs(self.center_x - 0):
-                    self.center_x = WIDTH
+                if abs(self.center_x - tanks.WIDTH) < abs(self.center_x - 0):
+                    self.center_x = tanks.WIDTH
                 else:
                     self.center_x = 0
                 # Mirror angle
@@ -91,7 +86,6 @@ class Enemy(arcade.Sprite):
             self.forward(self.speed)
             # Update current direction
             self.cur_direction = np.array([np.cos(self.radians), np.sin(self.radians)])
-
 
     def will_fire(self):
         """
@@ -115,13 +109,20 @@ class Enemy(arcade.Sprite):
             Bullet: one bullet object originating from the enemy and moving
                     in the proper direction.
         """
-        bullet = Bullets("Sprites/barrelRed_top.png", 0.5)
+        bullet = tanks.Bullets("Sprites/barrelRed_top.png", 0.5)
         bullet.angle = self.angle
         bullet.position = (self.center_x, self.center_y)
         direction = np.array([np.cos(bullet.radians), np.sin(bullet.radians)])
-        bullet.velocity = 2 * MOVEMENT_SPEED * direction
+        bullet.velocity = 2 * tanks.MOVEMENT_SPEED * direction
 
         return bullet
+
+    def destroy(self):
+        self.sound_death.play(0.5)
+        self.kill()
+        return DeadEnemy(
+            "Sprites/tank_dead1.png", self.center_x, self.center_y, self.angle
+        )
 
 
 class RedEnemy(Enemy):
@@ -133,7 +134,7 @@ class RedEnemy(Enemy):
         super().__init__("Sprites/tank_red.png")
         self.change_angle = angle_rate
         # Give chance to rotate opposite direction
-        if random.randint(0,1):
+        if random.randint(0, 1):
             self.change_angle *= -1
 
 
@@ -172,3 +173,40 @@ class WobblerEnemy(GreenEnemy):
         Enemy.__init__(self, "Sprites/tank_bigRed.png")
         self.change_angle = angle_rate
         self.speed = speed
+
+    def destroy(self):
+        self.sound_death.play(0.5)
+        self.kill()
+        return DeadEnemy(
+            "Sprites/tank_dead2.png", self.center_x, self.center_y, self.angle
+        )
+
+
+class DeadEnemy(tanks.Obstacle):
+    def __init__(self, texture, x, y, r):
+        super().__init__()
+        self.texture = arcade.load_texture(texture)
+        self.center_x = x
+        self.center_y = y
+        self.angle = r
+        self.health = 50
+        self.should_die = False
+        self.texture_smoke = arcade.make_soft_circle_texture(40, arcade.color.GRAY)
+        self.emitter = None
+
+    def generate_smoke(self):
+        """
+        Particle generator to create smoking wreck
+        """
+        offset = random.randint(-10, 10)
+        smoke = arcade.Emitter(
+            center_xy=(self.center_x + offset, self.center_y + offset),
+            emit_controller=arcade.EmitMaintainCount(50),
+            particle_factory=lambda emitter: arcade.FadeParticle(
+                filename_or_texture=self.texture_smoke,
+                change_xy=arcade.rand_vec_spread_deg(90, 20, 2),
+                lifetime=random.random() * 2,
+            ),
+        )
+        self.emitter = smoke
+        return smoke
