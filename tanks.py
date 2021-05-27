@@ -1,15 +1,15 @@
 import random
 
 import arcade
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import numpy as np
 
 import Enemies
 import Player
 
 MOVEMENT_SPEED = 5
-WIDTH = 1200
-HEIGHT = 800
+WIDTH = 1216
+HEIGHT = 832
 
 INSTRUCTIONS = 1
 LEVEL_ONE = 2
@@ -36,6 +36,9 @@ class Game(arcade.Window):
         self.t_shot = arcade.load_texture("Sprites/shotThin.png")
         self.t_hit = arcade.load_texture("Sprites/tank_red.png")
         self.emitters = []
+
+        self.setup()
+        self.read_tmx()
 
         arcade.run()
 
@@ -64,6 +67,16 @@ class Game(arcade.Window):
             heart.center_y = 750
             heart.center_x = i * 20 + 30
             self.lives_list.append(heart)
+
+    def read_tmx(self):
+        """
+        Reads in the sprite information and location from the tmx file created by Tiled.
+        """
+        filename = "Maps/TanksTest.tmx"
+        background_layer_name = "Background"
+
+        this_map = arcade.tilemap.read_tmx(filename)
+        self.background_list = arcade.tilemap.process_layer(this_map, background_layer_name)
 
     def graph(self):
         """
@@ -199,6 +212,7 @@ class Game(arcade.Window):
             or self.current_state == LEVEL_TWO
             or self.current_state == LEVEL_THREE
         ):
+            self.background_list.draw()
             self.oil_list.draw()
             self.obstacle_list.draw()
             self.player.draw()
@@ -346,13 +360,13 @@ class Game(arcade.Window):
                 self.level_two()
                 self.current_state = LEVEL_TWO
 
-        if self.current_state == LEVEL_TWO:
+        elif self.current_state == LEVEL_TWO:
 
             if len(self.enemy_list) == 0:
                 self.level_three()
                 self.current_state = LEVEL_THREE
 
-        if self.current_state == LEVEL_THREE:
+        elif self.current_state == LEVEL_THREE:
             for enemy in self.enemy_list:
                 if enemy.center_x < 40:
                     enemy.change_x = 3
@@ -367,7 +381,7 @@ class Game(arcade.Window):
 
             if len(self.enemy_list) == 0:
                 self.you_win()
-                self.graph()
+                # self.graph()
                 self.current_state = YOU_WIN
 
     def on_key_press(self, key, modifiers):
@@ -388,9 +402,13 @@ class Game(arcade.Window):
                 self.setup()
                 self.level_three()
                 self.current_state = LEVEL_THREE
-            if key == arcade.key.Q:
+            elif key == arcade.key.Q:
                 # close the window if 'Q' is pressed
                 arcade.close_window()
+            else: # if anything else, just start at beginning
+                self.setup()
+                self.level_one()
+                self.current_state = LEVEL_ONE
         if self.current_state == GAME_OVER:
             if key == arcade.key.A:
                 self.setup()
