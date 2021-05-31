@@ -9,6 +9,8 @@ class Player(arcade.Sprite):
     def __init__(self, x, y):
         super().__init__("Sprites/tank_blue.png")
         self.fire_noise = arcade.Sound("Sounds/tank_fire.mp3")
+        self.water_noise = arcade.Sound("Sounds/water_splash.mp3")
+        self.water_active_noise = None # holds pyglet media player when sound playing
         self.center_x = x
         self.center_y = y
         self.cur_keys_pressed = []
@@ -21,6 +23,7 @@ class Player(arcade.Sprite):
         self.mass = 1
         self.topspeed = tanks.MOVEMENT_SPEED
         self.toprot = 3
+        self.in_water = False # boolean flag to track if in water
 
         self.friction_base = 0.2
         self.friction_current = self.friction_base
@@ -198,6 +201,11 @@ class Player(arcade.Sprite):
                 self.forward(tanks.MOVEMENT_SPEED)
 
         self.update_movement()
+        if self.in_water:
+            if self.water_active_noise is None:
+                self.water_active_noise = self.water_noise.play(0.5)
+            elif not self.water_noise.is_playing(self.water_active_noise):
+                self.water_active_noise = self.water_noise.play(0.5)
         self.distance_traveled += self.change_x ** 2 + self.change_y ** 2
 
         # keep player on the screen
@@ -213,3 +221,10 @@ class Player(arcade.Sprite):
         elif self.top > tanks.HEIGHT:
             self.change_y = 0
             self.top = tanks.HEIGHT
+
+    def set_water_state(self, state: bool):
+        self.in_water = state
+        if self.in_water:
+            self.topspeed = tanks.MOVEMENT_SPEED / 3
+        else:
+            self.topspeed = tanks.MOVEMENT_SPEED
