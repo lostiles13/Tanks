@@ -16,6 +16,9 @@ class Enemy(arcade.Sprite):
         self.spawning = True
         self.alpha = 0
 
+        self.fire_cooldown = 0
+        self.point_value = 0
+
         self.sound_death = arcade.Sound("Sounds/explosion.mp3")
 
     def draw_direction(self, length: float = 40, color=arcade.color.RED):
@@ -57,6 +60,7 @@ class Enemy(arcade.Sprite):
                 self.spawning = False
         else:
             super().update()
+            self.fire_cooldown -= 1
 
             # Bounce top and bottom
             if self.center_y > tanks.HEIGHT or self.center_y < 0:
@@ -98,8 +102,8 @@ class Enemy(arcade.Sprite):
         if self.spawning:
             chance = -1
         else:
-            chance = 2
-        return random.randint(0, 100) <= chance
+            chance = 30
+        return random.randint(0, 100) <= chance - self.fire_cooldown / 2
 
     def fire(self):
         """
@@ -109,6 +113,7 @@ class Enemy(arcade.Sprite):
             Bullet: one bullet object originating from the enemy and moving
                     in the proper direction.
         """
+        self.fire_cooldown = 120 # 120 frame cooldown
         bullet = tanks.Bullets("Sprites/barrelRed_top.png", 0.5)
         bullet.angle = self.angle
         bullet.position = (self.center_x, self.center_y)
@@ -124,18 +129,22 @@ class Enemy(arcade.Sprite):
             "Sprites/tank_dead1.png", self.center_x, self.center_y, self.angle
         )
 
+    def get_point_value(self):
+        return self.point_value
+
 
 class RedEnemy(Enemy):
     """
     Enemy which just spins in circles and fires.
     """
 
-    def __init__(self, angle_rate: float):
+    def __init__(self, angle_rate: float = 1.0):
         super().__init__("Sprites/tank_red.png")
         self.change_angle = angle_rate
         # Give chance to rotate opposite direction
         if random.randint(0, 1):
             self.change_angle *= -1
+        self.point_value = 1
 
 
 class GreenEnemy(Enemy):
@@ -143,9 +152,10 @@ class GreenEnemy(Enemy):
     Enemy which spins and occasionally flips rotation direction.
     """
 
-    def __init__(self, angle_rate: float):
+    def __init__(self, angle_rate: float = 1.0):
         super().__init__("Sprites/tank_green.png")
         self.change_angle = angle_rate
+        self.point_value = 2
 
     def update(self):
         super().update()
@@ -158,9 +168,10 @@ class SandEnemy(Enemy):
     Enemy which moves straight, bouncing off walls.
     """
 
-    def __init__(self, speed: float):
+    def __init__(self, speed: float=2):
         super().__init__("Sprites/tank_sand.png")
-        self.speed = 2
+        self.speed = speed
+        self.point_value = 3
 
 
 class WobblerEnemy(GreenEnemy):
@@ -169,10 +180,11 @@ class WobblerEnemy(GreenEnemy):
     occassionally flips rotating direction.
     """
 
-    def __init__(self, angle_rate: float, speed: float):
+    def __init__(self, angle_rate: float=1.0, speed: float=2.0):
         Enemy.__init__(self, "Sprites/tank_bigRed.png")
         self.change_angle = angle_rate
         self.speed = speed
+        self.point_value = 4
 
     def destroy(self):
         self.sound_death.play(0.5)

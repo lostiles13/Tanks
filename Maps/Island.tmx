@@ -3,12 +3,12 @@
  <tileset firstgid="1" source="Terrain.tsx"/>
  <layer id="1" name="Background" width="19" height="13">
   <data encoding="base64" compression="zlib">
-   eJxjZGBgYIRiJiQ2DHMAsSgOLIbGZ8RhliYDwwJhIK3FwHCAUrPwuWeomcWMhHmR2DJALE4Aq1LBXcD4YBDCgkk1SwsSxwnoaQcdE2MWJwEzcKQvsLuB7lhAjlkCaHGBHAfKJJqFDcP8KkZnswCfNg12
+   eJydklEKwjAQRDcKUhQEI6kghYJ+1VP1aD1Kj+Yu3YEhpIn48QhJ2pfZTYKIhAqHxn4iSvtX5ejcaH0ksNb5fM/VysJMykdkSXQ+cxKZf3WFzbX+mwv9Qb21fpVcWsvSOexq9T53mcfqGCuZWi5kMY8ikbB+t2q0/wdypO0/W58vOoLotbKPz4/b+WtP++wJ5JooG3Ld/U75HcKVe0Lmi3QPxkt5ZDx9PEv5/YHBv3u7q8/uAuzVxnPkguMLBUIfCA==
   </data>
  </layer>
  <layer id="2" name="Water" width="19" height="13">
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo2DwA20qmmVABTNA7tEFYh0GhgR8aoB4ASFzQGYYAmlD/OoSgPgAPrMMoGbAMAAPYgWI
+   eJxjYCAOGACxIQFMLMBmlg4DwwJ9CH2AFLO0GRgSYHpgWA+IjZDsIQWguw1oNoMuhE4g1SxsbiMnvIgxjxyAyzxyAcg8UBwi41EwcAAAuT0R9A==
   </data>
  </layer>
 </map>

@@ -1,0 +1,97 @@
+[
+	{
+		"background": "TanksTest",
+		"player_pos": [600,400],
+		"enemies": [
+			{"type": "red", "pos": [100,100]},
+			{"type": "red", "pos": [1100,100]},
+			{"type": "red", "pos": [100,700]},
+			{"type": "green", "pos": [1100,700]}
+		],
+		"obstacles": [
+			{"pos":[200,200]},
+			{"pos":[1000,700]},
+			{"pos":[400,500]}
+		],
+		"slicks": [
+			{}
+		]
+	},
+	{
+		"background": "Island",
+		"player_pos": [50,400],
+		"enemies": [
+			{"type": "green", "pos": [100,100]},
+			{"type": "green", "pos": [1050,150]},
+			{"type": "green", "pos": [100,700]},
+			{"type": "green", "pos": [1100,700]}
+		],
+		"obstacles": [
+			{"pos":[50,300]},
+			{"pos":[300,400]},
+			{"pos":[50,500]}
+		],
+		"slicks": [
+			{},
+			{}
+		]
+	},
+	{
+		"background": "TanksTest",
+		"player_pos": [600,50],
+		"enemies": [
+			{"type": "sand", "pos": [100,100]},
+			{"type": "sand", "pos": [1100,100]},
+			{"type": "sand", "pos": [100,700]},
+			{"type": "sand", "pos": [1100,700]}
+		],
+		"obstacles": [
+			{"pos":[300,300]},
+			{"pos":[400,400]},
+			{"pos":[500,500]}
+		],
+		"slicks": [
+			{},
+			{}
+		]
+	},
+	{
+		"background": "Island",
+		"player_pos": [600,750],
+		"enemies": [
+			{"type": "sand", "pos": [100,100]},
+			{"type": "green", "pos": [1010,700]},
+			{"type": "sand", "pos": [100,700]},
+			{"type": "wobble", "pos": [1100,100]}
+		],
+		"obstacles": [
+			{"pos":[300,200]},
+			{"pos":[400,200]},
+			{"pos":[500,200]}
+		],
+		"slicks": [
+			{},
+			{}
+		]
+	},
+	{
+		"background": "TanksTest",
+		"player_pos": [600,400],
+		"enemies": [
+			{"type": "wobble", "pos": [100,100]},
+			{"type": "wobble", "pos": [1100,100]},
+			{"type": "wobble", "pos": [100,700]},
+			{"type": "wobble", "pos": [1100,700]}
+		],
+		"obstacles": [
+			{"pos":[500,300]},
+			{"pos":[500,500]},
+			{"pos":[700,300]},
+			{"pos":[700,500]}
+		],
+		"slicks": [
+			{},
+			{}
+		]
+	}
+]
